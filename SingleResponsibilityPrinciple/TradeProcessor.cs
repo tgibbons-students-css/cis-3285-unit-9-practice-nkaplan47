@@ -67,7 +67,16 @@ namespace SingleResponsibilityPrinciple
                 LogMessage("WARN: Trade amount on line {0} not a valid integer: '{1}'", currentLine, fields[1]);
                 return false;
             }
-
+            if (tradeAmount < 1000)
+            {
+                LogMessage("WARN: Trade amount on line {0} is too small of an integer: '{1}'", currentLine, fields[1]);
+                return false;
+            }
+            if (tradeAmount > 100000)
+            {
+                LogMessage("WARN: Trade amount on line {0} is too large of an integer: '{1}'", currentLine, fields[1]);
+                return false;
+            }
             decimal tradePrice;
             if (!decimal.TryParse(fields[2], out tradePrice))
             {
@@ -81,7 +90,12 @@ namespace SingleResponsibilityPrinciple
         private void LogMessage(string message, params object[] args)
         {
             Console.WriteLine(message, args);
+            using (StreamWriter logfile = File.AppendText("log.xml"))
+            {
+                logfile.WriteLine(" " + message + " ", args);
+            }
         }
+
 
         private TradeRecord MapTradeDataToTradeRecord(string[] fields)
         {
@@ -104,7 +118,7 @@ namespace SingleResponsibilityPrinciple
         private void StoreTrades(IEnumerable<TradeRecord> trades)
         {
             LogMessage("INFO: Connecting to Database");
-            using (var connection = new System.Data.SqlClient.SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\tradedatabase.mdf;Integrated Security=True;Connect Timeout=30;"))
+            using (var connection = new System.Data.SqlClient.SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\nkaplan\Source\Repos\cis-3285-unit-9-practice-nkaplan47\tradesdatabase.mdf;Integrated Security=True;Connect Timeout=30;"))
             {
                 connection.Open();
                 using (var transaction = connection.BeginTransaction())
